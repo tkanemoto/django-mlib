@@ -1,0 +1,66 @@
+{% extends "player/base.html" %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+  <script src="{{ STATIC_URL }}player/js/jquery.js" type="text/javascript"></script>
+  <script src="{{ STATIC_URL }}player/js/jquery.ba-hashchange.min.js" type="text/javascript"></script>
+  <script src="{{ STATIC_URL }}player/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="{{ STATIC_URL }}player/bootstrap/css/bootstrap.min.css" type="text/css" media="screen"/>
+  <script lang="javascript">
+  $(function() {
+    $("#artists").load('{% url player_artists %}', function() {
+    });
+    $(window).hashchange(function(){
+      params = window.location.hash.replace('#', '').split(',');
+      if (params.length > 0 && params[0].length > 0) {
+        if (params.length > 1 && params[1] == 'expand') {
+          letter = params[0];
+          $('tr.artist.expanded').removeClass('expanded');
+          $('#artists a[href^="#' + letter + '"]').parent().parent().addClass('expanded');
+        } else {
+          artist = params[0];
+          $("#tracks").load('tracks/' + artist + '/', function() {
+            $("#tracks a").click(function() {
+              $("#playlist").append($("#tracks .table").clone());
+              $("#tabs a[href='#playlist']").click();
+              return false;
+            });
+            $("#tabs a[href='#tracks']").click();
+          });
+        }
+      } else {
+        $("#tabs a[href='#artists']").click();
+      }
+    });
+    $(window).hashchange();
+  });
+  </script>
+  <style>
+  .table td a { display: block; }
+  .table td[rowspan] { background-color: transparent!important; }
+  .tab-content { margin-top: 40px; }
+  td.album { width: 25%; }
+  tr.artist { display: none; }
+  tr.artist.expanded { display: table-row; }
+  </style>
+{% endblock %}
+
+{% block body %}
+  <div class="navbar navbar-fixed-top navbar-inverse">
+    <div class="navbar-inner">
+      <ul id="tabs" class="nav">
+        <li class="active"><a href="#artists" data-toggle="tab">Artists</a></li>
+        <li><a href="#tracks" data-toggle="tab">Tracks</a></li>
+        <li><a href="#playlist" data-toggle="tab">Playlist</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="tab-content">
+    <div class="tab-pane active" id="artists"></div>
+    <div class="tab-pane" id="tracks"></div>
+    <div class="tab-pane" id="playlist"></div>
+  </div>
+{% endblock %}
