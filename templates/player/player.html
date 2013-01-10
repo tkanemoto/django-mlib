@@ -8,47 +8,149 @@
   <script src="{{ STATIC_URL }}player/js/jquery.js" type="text/javascript"></script>
   <script src="{{ STATIC_URL }}player/js/jquery.ba-hashchange.min.js" type="text/javascript"></script>
   <script src="{{ STATIC_URL }}player/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}player/js/jquery.jplayer.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}player/js/jplayer.playlist.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}player/js/jquery.jplayer.inspector.js"></script>
   <link rel="stylesheet" href="{{ STATIC_URL }}player/bootstrap/css/bootstrap.min.css" type="text/css" media="screen"/>
   <script lang="javascript">
-  $(function() {
+  $(document).ready(function(){
     $("#artists").load('{% url player_artists %}', function() {
+      $(window).hashchange();
     });
     $(window).hashchange(function(){
-      params = window.location.hash.replace('#', '').split(',');
-      if (params.length > 0 && params[0].length > 0) {
-        if (params.length > 1 && params[1] == 'expand') {
-          letter = params[0];
+      var params = window.location.hash.replace('#', '').split('/');
+      if (params.length > 1 && params[0] == '!') {
+        var tab = params[1];
+        if ($('#tabs .active a').attr('href').replace('#', '') != tab) {
+          $("#tabs a[href='#" + tab + "']").tab('show');
+        }
+        if (tab == 'artists' && params.length > 2) {
+          var letter = params[2];
           $('tr.artist.expanded').removeClass('expanded');
-          $('#artists a[href^="#' + letter + '"]').parent().parent().addClass('expanded');
-        } else {
-          artist = params[0];
+          var $a = $('#artists tr.artist a[href^="#!/tracks/' + letter + '"]');
+          $a.parent().parent().addClass('expanded');
+          $a.each(function(index, element) {
+            if (!$('img', element).length) {
+              var artist = $(element).text();
+              $.getJSON('http://ws.audioscrobbler.com/2.0/', {
+                'method': 'artist.getinfo',
+                'artist': artist,
+                'api_key': '053648f45f4cdf073d7cc1d58990ccab',
+                'format': 'json'
+              }, function(data) {
+                $(element).prepend($('<img>').attr({
+                  'src': data['artist']['image'][0]['#text'],
+                  'src-small': data['artist']['image'][0]['#text'],
+                  'src-medium': data['artist']['image'][1]['#text'],
+                  'src-large': data['artist']['image'][2]['#text'],
+                }));
+              });
+            }
+          });
+        } else if(tab == 'tracks' && params.length > 2) {
+          var artist = params[2];
           $("#tracks").load('tracks/' + artist + '/', function() {
-            $("#tracks a").click(function() {
-              $("#playlist").append($("#tracks .table").clone());
-              $("#tabs a[href='#playlist']").click();
+            $('#tracks .table td.album').each(function(index, element) {
+              var album = $(element).find('> .name').text();
+              var artist = $(element).find('> .artist').text();
+              $.getJSON('http://ws.audioscrobbler.com/2.0/', {
+                'method': 'album.getinfo',
+                'album': album,
+                'artist': artist,
+                'api_key': '053648f45f4cdf073d7cc1d58990ccab',
+                'format': 'json'
+              }, function(data) {
+                if ('error' in data) {
+                } else {
+                  $(element).prepend($('<img>').attr({
+                    'src': data['album']['image'][2]['#text'],
+                    'src-small': data['album']['image'][0]['#text'],
+                    'src-medium': data['album']['image'][1]['#text'],
+                    'src-large': data['album']['image'][2]['#text'],
+                  }));
+                }
+              });
+            });
+            $("#tracks a").click(function(){
+              $(this).parent().parent().parent().find('tr.info').removeClass('info');
+              $(this).parent().parent().addClass('info');
+              return false;
+            }).dblclick(function() {
+              playlist.remove();
+              var a = this;
+              list = Array();
+              $("#tracks > table > tbody > tr > td:last-child").each(function(index, element) {
+                var $tr = $(element).parent();
+                var temp = $tr.prevUntil('tr:has(td[rowspan])');
+                if (temp.length) {
+                  $tr = $(temp[temp.length - 1]).prev();
+                }
+                list.push({
+                  title: $('a', element).attr('data-title'),
+                  artist: $('a', element).attr('data-artist'),
+                  mp3: $('a', element).attr('href'),
+                  poster: $('td[rowspan] img', $tr).attr('src-small')
+                });
+                if ($('a', element)[0] == a) {
+                  item_index = index;
+                }
+              });
+              playlist.setPlaylist(list);
+              playlist.play(item_index);
+              $("#tabs a[href='#playlist']").tab('show');
               return false;
             });
-            $("#tabs a[href='#tracks']").click();
           });
         }
       } else {
-        $("#tabs a[href='#artists']").click();
+        $("#tabs a[href='#artists']").tab('show');
       }
     });
     $(window).hashchange();
+
+    var playlist = new jPlayerPlaylist({
+      jPlayer: "#jquery_jplayer_1",
+      cssSelectorAncestor: "#jp_container_1"
+    }, [], {
+      playlistOptions: {
+        enableRemoveControls: true
+      },
+      swfPath: "../js",
+      supplied: "mp3",
+      wmode: "window",
+      size: { width: '24px', height: '24px' }
+	});
+
+    $("#jplayer_inspector_1").jPlayerInspector({jPlayer:$("#jquery_jplayer_1")});
   });
   </script>
   <style>
   .table td a { display: block; }
   .table td[rowspan] { background-color: transparent!important; }
-  .tab-content { margin-top: 40px; }
-  td.album { width: 25%; }
+  .tab-content { margin-top: 40px; margin-bottom: 40px; }
+  #tracks .table tr td a { cursor: default; }
+  .tab-content a:hover { text-decoration: none; }
+  td.album { width: 200px; }
   tr.artist { display: none; }
   tr.artist.expanded { display: table-row; }
+  .jp-gui ul { list-style: none; }
+  .jp-gui > div { padding: 10px 15px 10px; }
+  .jp-gui ul li { display: inline; }
+  .jp-gui .jp-progress { height: 40px; }
+  .jp-gui .progress { height: 10px; }
+  .jp-gui .progress { margin-bottom: 0px; }
+  .jp-playlist ul { list-style: none; margin-left: 0px; }
+  .jp-playlist ul li { border-bottom: 1px solid #ddd; }
+  .jp-playlist ul li.jp-playlist-current { background-color: #d9edf7; }
+  .jp-playlist ul li .jp-playlist-item-remove { float: right; }
+  .jp-playlist ul li div a { display: block; padding: 10px 10px; }
+  .jp-playlist ul li div a .jp-artist { float: right; color: #999; }
+  .jp-jplayer img { margin: 8px; }
   </style>
 {% endblock %}
 
 {% block body %}
+<div id="jp_container_1" class="jp-audio">
   <div class="navbar navbar-fixed-top navbar-inverse">
     <div class="navbar-inner">
       <ul id="tabs" class="nav">
@@ -61,6 +163,56 @@
   <div class="tab-content">
     <div class="tab-pane active" id="artists"></div>
     <div class="tab-pane" id="tracks"></div>
-    <div class="tab-pane" id="playlist"></div>
+    <div class="tab-pane" id="playlist">
+      <div class="jp-playlist">
+        <ul>
+          <li></li>
+        </ul>
+      </div>
+    </div>
   </div>
+  <div class="navbar navbar-fixed-bottom navbar-inverse">
+    <div class="navbar-inner">
+      <div class="jp-type-playlist">
+        <div class="jp-gui jp-interface">
+          <ul class="jp-controls nav">
+            <li><div id="jquery_jplayer_1" class="jp-jplayer"></div></li>
+            <li><a href="javascript:;" class="jp-previous" tabindex="1"><i class="icon-white icon-step-backward"></i></a></li>
+            <li><a href="javascript:;" class="jp-play" tabindex="1"><i class="icon-white icon-play"></i></a></li>
+            <li><a href="javascript:;" class="jp-pause" tabindex="1"><i class="icon-white icon-pause"></i></a></li>
+            <li><a href="javascript:;" class="jp-next" tabindex="1"><i class="icon-white icon-step-forward"></i></a></li>
+            <li><a href="javascript:;" class="jp-stop" tabindex="1"><i class="icon-white icon-stop"></i></a></li>
+            <li><a href="javascript:;" class="jp-mute" tabindex="1" title="mute"><i class="icon-white icon-volume-down"></i></a></li>
+            <li><a href="javascript:;" class="jp-unmute" tabindex="1" title="unmute"><i class="icon-white icon-volume-off"></i></a></li>
+            <li><a href="javascript:;" class="jp-volume-max" tabindex="1" title="max volume"><i class="icon-white icon-volume-up"></i></a></li>
+            <li>
+              <div class="jp-volume-bar">
+                <div class="jp-volume-bar-value"></div>
+              </div>
+            </li>
+            <li><a href="javascript:;"><span class="jp-current-time"></span> / <span class="jp-duration"></span></a></li>
+          </ul>
+
+          <ul class="jp-toggles nav">
+            <li><a href="javascript:;" class="jp-shuffle" tabindex="1" title="shuffle"><i class="icon icon-random"></i></a></li>
+            <li><a href="javascript:;" class="jp-shuffle-off" tabindex="1" title="shuffle off"><i class="icon-white icon-random"></i></a></li>
+            <li><a href="javascript:;" class="jp-repeat" tabindex="1" title="repeat"><i class="icon icon-repeat"></i></a></li>
+            <li><a href="javascript:;" class="jp-repeat-off" tabindex="1" title="repeat off"><i class="icon-white icon-repeat"></i></a></li>
+          </ul>
+          <div class="jp-progress">
+            <div class="jp-seek-bar progress">
+              <div class="jp-play-bar bar"></div>
+            </div>
+          </div>
+        </div>
+        <div class="jp-no-solution">
+          <span>Update Required</span>
+          To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="jplayer_inspector_1"></div>
 {% endblock %}
