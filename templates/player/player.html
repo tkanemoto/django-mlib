@@ -12,7 +12,31 @@
   <script type="text/javascript" src="{{ STATIC_URL }}player/js/jplayer.playlist.min.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}player/js/jquery.jplayer.inspector.js"></script>
   <link rel="stylesheet" href="{{ STATIC_URL }}player/bootstrap/css/bootstrap.min.css" type="text/css" media="screen"/>
+  <link rel="stylesheet" href="{{ STATIC_URL }}player/bootstrap/css/bootstrap-responsive.min.css" type="text/css" media="screen"/>
   <script lang="javascript">
+  function expandArtists(letter) {
+    $('tr.artist.expanded').removeClass('expanded');
+    var $a = $('#artists tr.artist a[href^="#!/tracks/' + letter + '"]');
+    $a.parent().parent().addClass('expanded');
+    $a.each(function(index, element) {
+      if (!$('img', element).length) {
+        var artist = $(element).text();
+        $.getJSON('http://ws.audioscrobbler.com/2.0/', {
+          'method': 'artist.getinfo',
+          'artist': artist,
+          'api_key': '053648f45f4cdf073d7cc1d58990ccab',
+          'format': 'json'
+        }, function(data) {
+          $(element).prepend($('<img>').attr({
+            'src': data['artist']['image'][0]['#text'],
+            'src-small': data['artist']['image'][0]['#text'],
+            'src-medium': data['artist']['image'][1]['#text'],
+            'src-large': data['artist']['image'][2]['#text'],
+          }));
+        });
+      }
+    });
+  }
   $(document).ready(function(){
     $("#artists").load('{% url player_artists %}', function() {
       $(window).hashchange();
@@ -25,30 +49,16 @@
           $("#tabs a[href='#" + tab + "']").tab('show');
         }
         if (tab == 'artists' && params.length > 2) {
-          var letter = params[2];
-          $('tr.artist.expanded').removeClass('expanded');
-          var $a = $('#artists tr.artist a[href^="#!/tracks/' + letter + '"]');
-          $a.parent().parent().addClass('expanded');
-          $a.each(function(index, element) {
-            if (!$('img', element).length) {
-              var artist = $(element).text();
-              $.getJSON('http://ws.audioscrobbler.com/2.0/', {
-                'method': 'artist.getinfo',
-                'artist': artist,
-                'api_key': '053648f45f4cdf073d7cc1d58990ccab',
-                'format': 'json'
-              }, function(data) {
-                $(element).prepend($('<img>').attr({
-                  'src': data['artist']['image'][0]['#text'],
-                  'src-small': data['artist']['image'][0]['#text'],
-                  'src-medium': data['artist']['image'][1]['#text'],
-                  'src-large': data['artist']['image'][2]['#text'],
-                }));
-              });
-            }
-          });
+          expandArtists(params[2]);
         } else if(tab == 'tracks' && params.length > 2) {
           var artist = params[2];
+          var letter = artist[0];
+
+          // expand the letter in the artists list.
+          expandArtists(letter);
+
+          // make the anchor with the artist slug hash active
+          $("#artists a[href='#!/tracks/" + artist + "']").closest('tr').addClass('info');
           $("#tracks").load('tracks/' + artist + '/', function() {
             $('#tracks .table td.album').each(function(index, element) {
               var album = $(element).find('> .name').text();
@@ -125,7 +135,8 @@
   });
   </script>
   <style>
-  .table td a { display: block; }
+  .table > tbody > tr > td > a { display: block; padding: 8px; }
+  .table > tbody > tr > td { padding: 0px; }
   .table td[rowspan] { background-color: transparent!important; }
   .tab-content { margin-top: 40px; margin-bottom: 40px; }
   #tracks .table tr td a { cursor: default; }
