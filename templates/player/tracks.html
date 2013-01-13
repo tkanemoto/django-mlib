@@ -1,8 +1,13 @@
 <table class="table table-striped">
   {% for track in object_list %}
     <tr>
-      {% if track.album %}{% ifchanged track.album.pk %}<td class="album" rowspan="{{ track.album.tracks.all.count }}"><div class="name">{{ track.album }}</div><div class="artist muted">{{ track.band }}</div></td>{% endifchanged %}{% endif %}
-      <td {% if not track.album %}colspan="2"{% endif %}>
+      {% if track.album %}
+        {% ifchanged track.album.pk %}
+          <td class="album" rowspan="{{ track.album.tracks.all.count }}"><div class="name">{{ track.album }}</div><div class="artist muted">{{ track.band }}</div></td>
+        {% endifchanged %}
+      {% else %}<td class="dummy"></td>
+      {% endif %}
+      <td>
         <a href="{{ track.mp3_url }}"
            data-artist="{{ track.band.title }}"
            data-album-artist="{{ track.album.band.title }}"
