@@ -1,6 +1,6 @@
 <table class="table table-hover table-striped">
   {% for band in object_list %}
-    {% ifchanged band.slug.0 %}<tr class="artist-expand warning"><td><a href="#{{ band.slug.0 }},expand">{{ band.slug.0|upper }}</a></td></tr>{% endifchanged %}
-    <tr class="artist"><td><a href="#{{ band.slug }}">{{ band.full_title }}</a></td></tr>
+    {% ifchanged band.slug.0 %}<tr class="artist-expand warning"><td><a href="#!/artists/{{ band.slug.0 }}">{{ band.slug.0|upper }}</a></td></tr>{% endifchanged %}
+    <tr class="artist"><td><a href="#!/tracks/{{ band.slug }}">{{ band.full_title }}</a></td></tr>
   {% endfor %}
 </table>
