@@ -148,6 +148,8 @@
   .jp-gui .jp-progress { height: 40px; }
   .jp-gui .progress { height: 10px; }
   .jp-gui .progress { margin-bottom: 0px; }
+  .jp-gui .jp-volume { padding: 15px 15px 0px; }
+  .jp-gui .jp-volume .progress { width: 100px; }
   .jp-playlist ul { list-style: none; margin-left: 0px; }
   .jp-playlist ul li { border-bottom: 1px solid #ddd; }
   .jp-playlist ul li.jp-playlist-current { background-color: #d9edf7; }
@@ -195,8 +197,10 @@
             <li><a href="javascript:;" class="jp-unmute" tabindex="1" title="unmute"><i class="icon-white icon-volume-off"></i></a></li>
             <li><a href="javascript:;" class="jp-volume-max" tabindex="1" title="max volume"><i class="icon-white icon-volume-up"></i></a></li>
             <li>
-              <div class="jp-volume-bar">
-                <div class="jp-volume-bar-value"></div>
+              <div class="jp-volume">
+              <div class="jp-volume-bar progress">
+                <div class="jp-volume-bar-value bar"></div>
+              </div>
               </div>
             </li>
             <li><a href="javascript:;"><span class="jp-current-time"></span> / <span class="jp-duration"></span></a></li>
