@@ -82,10 +82,6 @@
               });
             });
             $("#tracks a").click(function(){
-              $(this).parent().parent().parent().find('tr.info').removeClass('info');
-              $(this).parent().parent().addClass('info');
-              return false;
-            }).dblclick(function() {
               playlist.remove();
               var a = this;
               list = Array();
@@ -139,7 +135,6 @@
   .table > tbody > tr > td { padding: 0px; }
   .table td[rowspan] { background-color: transparent!important; }
   .tab-content { margin-top: 40px; margin-bottom: 40px; }
-  #tracks .table tr td a { cursor: default; }
   #tracks .table tr td.dummy { border-top: none!important; }
   .tab-content a:hover { text-decoration: none; }
   td.album { width: 200px; }
