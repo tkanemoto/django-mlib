@@ -1,0 +1,12 @@
+<ul>
+  {% for band in object_list %}
+    <li class="artist">
+      <a href="#!/tracks/{{ band.slug }}"
+         data-artist="{{ band.title }}"
+         data-artist-slug="{{ band.slug }}">
+        <img class="artist-image" src=""/>
+        {{ band.full_title }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>

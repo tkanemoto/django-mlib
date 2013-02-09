@@ -7,31 +7,58 @@
   <script type="text/javascript" src="{{ STATIC_URL }}player/js/jplayer.playlist.min.js"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}player/js/jquery.jplayer.inspector.js"></script>
   <script lang="javascript">
-  function expandArtists(letter) {
-    $('tr.artist.expanded').removeClass('expanded');
-    var $a = $('#artists tr.artist a[href^="#!/tracks/' + letter + '"]');
+  function fetchArtistImages() {
+    var $a = $('#artists .artist > a');
     $a.parent().parent().addClass('expanded');
     $a.each(function(index, element) {
-      if (!$('img', element).length) {
-        var artist = $(element).text();
+      if (!$('img', element).attr('src').length) {
+        var artist = $(element).attr('data-artist');
         $.getJSON('http://ws.audioscrobbler.com/2.0/', {
           'method': 'artist.getinfo',
           'artist': artist,
           'api_key': '053648f45f4cdf073d7cc1d58990ccab',
           'format': 'json'
         }, function(data) {
-          $(element).prepend($('<img>').attr({
-            'src': data['artist']['image'][0]['#text'],
+          if (data['error']) {
+            // TODO: show error
+          } else {
+            $('img', element).attr({
+              'src': data['artist']['image'][1]['#text'],
+              'src-small': data['artist']['image'][0]['#text'],
+              'src-medium': data['artist']['image'][1]['#text'],
+              'src-large': data['artist']['image'][2]['#text'],
+            });
+          }
+        });
+      }
+    });
+  }
+  function expandArtists(letter) {
+    $('.artist.expanded').removeClass('expanded');
+    var $a = $('#artists .artist a[href^="#!/tracks/' + letter + '"]');
+    $a.parent().parent().addClass('expanded');
+    $a.each(function(index, element) {
+      if (!$('img', element).attr('src').length) {
+        var artist = $(element).attr('data-artist');
+        $.getJSON('http://ws.audioscrobbler.com/2.0/', {
+          'method': 'artist.getinfo',
+          'artist': artist,
+          'api_key': '053648f45f4cdf073d7cc1d58990ccab',
+          'format': 'json'
+        }, function(data) {
+          $('img', element).attr({
+            'src': data['artist']['image'][1]['#text'],
             'src-small': data['artist']['image'][0]['#text'],
             'src-medium': data['artist']['image'][1]['#text'],
             'src-large': data['artist']['image'][2]['#text'],
-          }));
+          });
         });
       }
     });
   }
   $(document).ready(function(){
     $("#artists").load('{% url player_artists %}', function() {
+      fetchArtistImages();
       $(window).hashchange();
     });
     $(window).hashchange(function(){
@@ -135,6 +162,10 @@
   td.album { width: 200px; }
   tr.artist { display: none; }
   tr.artist.expanded { display: table-row; }
+  #artists > ul { list-style: none; margin-left: 0px; }
+  #artists > ul > li.artist { float: left; width: 64px; overflow: hidden; height: 90px; margin: 3px; }
+  #artists > ul > li.artist a { display: block; font-size: 75%; line-height: 12px; }
+  img.artist-image { width: 64px; height: 64px; display: block; }
   .jp-gui ul { list-style: none; }
   .jp-gui > div { padding: 10px 15px 10px; }
   .jp-gui ul li { display: inline; }

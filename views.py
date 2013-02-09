@@ -12,7 +12,7 @@ class Player(TemplateView):
 
 
 class ArtistList(ListView):
-    template_name="player/artists.html"
+    template_name="player/artist_grid.html"
     model = Band
 
 
