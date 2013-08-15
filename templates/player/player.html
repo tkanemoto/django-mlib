@@ -156,7 +156,7 @@
   .table > tbody > tr > td > a { display: block; padding: 8px; }
   .table > tbody > tr > td { padding: 0px; }
   .table td[rowspan] { background-color: transparent!important; }
-  .tab-content { margin-top: 40px; margin-bottom: 40px; }
+  .tab-content { margin-bottom: 40px; }
   #tracks .table tr td.dummy { border-top: none!important; }
   .tab-content a:hover { text-decoration: none; }
   td.album { width: 200px; }
@@ -184,17 +184,19 @@
   </style>
 {% endblock %}
 
-{% block body %}
+{% block container_class %}{% endblock %}
+{% block container_row_class %}{% endblock %}
+{% block content_class %}{% endblock %}
+
+{% block navigation %}
+<ul id="tabs" class="nav">
+  <li class="active"><a href="#artists" data-toggle="tab">Artists</a></li>
+  <li><a href="#tracks" data-toggle="tab">Tracks</a></li>
+  <li><a href="#playlist" data-toggle="tab">Playlist</a></li>
+</ul>
+{% endblock %}
+{% block content %}
 <div id="jp_container_1" class="jp-audio">
-  <div class="navbar navbar-fixed-top navbar-inverse">
-    <div class="navbar-inner">
-      <ul id="tabs" class="nav">
-        <li class="active"><a href="#artists" data-toggle="tab">Artists</a></li>
-        <li><a href="#tracks" data-toggle="tab">Tracks</a></li>
-        <li><a href="#playlist" data-toggle="tab">Playlist</a></li>
-      </ul>
-    </div>
-  </div>
   <div class="tab-content">
     <div class="tab-pane active" id="artists"></div>
     <div class="tab-pane" id="tracks"></div>
