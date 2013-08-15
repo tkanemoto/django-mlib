@@ -1,11 +1,12 @@
 from django.conf.urls.defaults import patterns, url
+from django.contrib.auth.decorators import login_required
 
 from player.views import Player, ArtistList, TrackList
 
 urlpatterns = patterns(
     'player.views',
     url(r'^$',
-        view=Player.as_view(),
+        view=login_required(Player.as_view()),
         name='player',
     ),
     url(r'^artists$',
