@@ -127,3 +127,7 @@ class Command(BaseCommand):
                     mp3=abspath,
                     number=num
                 )
+        for track in Track.objects.all():
+            if not os.path.exists(track.mp3):
+                logging.info('Deleting %s', track.mp3)
+                track.delete()
