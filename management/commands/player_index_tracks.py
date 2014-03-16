@@ -60,6 +60,8 @@ class Command(BaseCommand):
             for filename in fnmatch.filter(filenames, '*.mp3'):
                 abspath = os.path.join(root, filename)
                 logging.info('%s', abspath)
+                if Track.objects.filter(mp3=abspath).exists():
+                    continue
                 #id3 = self.get_id3(abspath)
                 try:
                     id3 = ID3(abspath)
