@@ -57,7 +57,7 @@
     });
   }
   $(document).ready(function(){
-    $("#artists").load('{% url player_artists %}', function() {
+    $("#artists").load('{% url 'player_artists' %}', function() {
       fetchArtistImages();
       $(window).hashchange();
     });
