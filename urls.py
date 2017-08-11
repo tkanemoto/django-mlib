@@ -1,10 +1,9 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
 
 from player.views import Player, ArtistList, TrackList
 
-urlpatterns = patterns(
-    'player.views',
+urlpatterns = [
     url(r'^$',
         view=login_required(Player.as_view()),
         name='player',
@@ -17,4 +16,4 @@ urlpatterns = patterns(
         view=TrackList.as_view(),
         name='player_tracks',
     ),
-)
+]
